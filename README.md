@@ -1,5 +1,10 @@
 # RepoRadar
 
+![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
+![Platform](https://img.shields.io/badge/platform-GitHub%20API-black?logo=github)
+
 **GitHub Repository Security Scanner** — scans public repositories for exposed secrets, dangerous CI/CD misconfigurations, and sensitive files.
 
 Built for authorized security assessments and educational research.
