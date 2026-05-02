@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Results: {{ target }} — RepoRadar{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+
+  <a href="{{ url_for('index') }}" class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-accent mb-6 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    New scan
+  </a>
+
+  {# ── Summary banner ─────────────────────────────────────────── #}
+  <div class="p-6 bg-ink-900 border border-ink-700 rounded-xl mb-8
+      {% if summary.CRITICAL > 0 %}border-red-500/40
+      {% elif summary.HIGH > 0 %}border-orange-500/40
+      {% elif total_findings == 0 %}border-accent/40{% endif %}">
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+      <div>
+        <div class="text-xs font-mono text-gray-500 mb-1">SCAN TARGET</div>
+        <a href="{{ result.url }}" target="_blank"
+           class="text-2xl font-bold font-mono hover:text-accent transition">
+          {{ target }}
+        </a>
+        {% if result.description %}
+        <p class="text-sm text-gray-400 mt-1">{{ result.description }}</p>
+        {% endif %}
+      </div>
+      <div class="text-right">
+        {% if total_findings == 0 and not error %}
+          <div class="text-3xl font-bold text-accent">CLEAN</div>
+          <div class="text-xs text-gray-500 font-mono">no findings</div>
+        {% elif summary.CRITICAL > 0 %}
+          <div class="text-3xl font-bold text-red-400">CRITICAL</div>
+          <div class="text-xs text-gray-500 font-mono">{{ total_findings }} total findings</div>
+        {% elif summary.HIGH > 0 %}
+          <div class="text-3xl font-bold text-orange-400">HIGH RISK</div>
+          <div class="text-xs text-gray-500 font-mono">{{ total_findings }} total findings</div>
+        {% else %}
+          <div class="text-3xl font-bold text-yellow-400">REVIEW</div>
+          <div class="text-xs text-gray-500 font-mono">{{ total_findings }} total findings</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="px-4 py-3 rounded-lg border border-red-500/40 bg-red-500/10 text-red-300 text-sm">
+      <strong class="font-semibold">Scan error:</strong> {{ error }}
+    </div>
+    {% else %}
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+      {% for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'] %}
+      <div class="p-3 bg-ink-800 rounded-lg border border-ink-700 text-center">
+        <div class="text-2xl font-bold severity-{{ sev }}">{{ summary[sev] }}</div>
+        <div class="text-xs font-mono text-gray-500 mt-1">{{ sev }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-xs font-mono text-gray-500">
+      <span>files scanned: <span class="text-gray-300">{{ scanned_files }}</span></span>
+      <span>stars: <span class="text-gray-300">{{ result.stars }}</span></span>
+      <span>scanned: <span class="text-gray-300">{{ scan_time }}</span></span>
+      <span>quota: <span class="text-gray-300">{{ scans_used }}/{{ scan_limit }}</span></span>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Findings list ──────────────────────────────────────────── #}
+  {% if result.findings %}
+  <div class="bg-ink-900 border border-ink-700 rounded-xl overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-ink-700 flex items-center justify-between">
+      <h2 class="font-bold">Findings</h2>
+      <div class="text-xs font-mono text-gray-500">{{ result.findings|length }} total</div>
+    </div>
+
+    <div class="divide-y divide-ink-700">
+      {% set severity_order = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3, 'INFO': 4} %}
+      {% for finding in result.findings|sort(attribute='severity', reverse=false) %}
+      <div class="px-6 py-4 hover:bg-ink-800/50 transition">
+        <div class="flex flex-col md:flex-row md:items-start gap-3">
+          <span class="badge severity-{{ finding.severity }} flex-shrink-0">
+            {{ finding.severity }}
+          </span>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-baseline gap-x-3">
+              <span class="font-semibold">{{ finding.title }}</span>
+              <span class="text-xs text-gray-500 font-mono">{{ finding.category }}</span>
+            </div>
+            {% if finding.file %}
+            <div class="text-xs font-mono text-gray-400 mt-1 truncate">
+              <a href="{{ result.url }}/blob/HEAD/{{ finding.file }}{% if finding.line %}#L{{ finding.line }}{% endif %}"
+                 target="_blank" class="hover:text-accent transition">
+                {{ finding.file }}{% if finding.line %}:{{ finding.line }}{% endif %}
+              </a>
+            </div>
+            {% endif %}
+            {% if finding.detail %}
+            <div class="mt-2 px-3 py-2 bg-ink-950 rounded font-mono text-xs text-gray-400 break-all">
+              {{ finding.detail }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% elif not error %}
+  <div class="p-8 bg-ink-900 border border-accent/30 rounded-xl text-center mb-8">
+    <div class="text-5xl mb-3">✓</div>
+    <h3 class="text-xl font-bold text-accent mb-2">No findings detected</h3>
+    <p class="text-sm text-gray-400">
+      Scanned {{ scanned_files }} files and found no exposed secrets, dangerous CI/CD patterns,
+      or sensitive files. This repository looks clean.
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── Email capture / report download ────────────────────────── #}
+  {% if result.findings %}
+  <div class="p-8 bg-gradient-to-br from-ink-900 to-ink-800 border border-accent/30 rounded-xl">
+    <div class="grid md:grid-cols-2 gap-6 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full border border-accent/40 bg-accent/5 text-accent text-xs font-mono">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          FREE EXPORT
+        </div>
+        <h3 class="text-2xl font-bold mb-2">Get the full JSON report</h3>
+        <p class="text-sm text-gray-400">
+          Includes every finding, file path, line number, and detail string —
+          ready to import into your SIEM or share with your team.
+        </p>
+      </div>
+      <form action="{{ url_for('capture') }}" method="POST" class="flex flex-col gap-2">
+        <input type="email" name="email" placeholder="you@company.com" required
+               class="px-4 py-3 bg-ink-950 border border-ink-600 rounded-lg
+                      font-mono text-sm placeholder-gray-600
+                      focus:outline-none focus:border-accent transition">
+        <button type="submit"
+                class="px-5 py-3 bg-accent hover:bg-accent-dim text-ink-950 font-bold rounded-lg transition">
+          Download JSON →
+        </button>
+        <p class="text-[10px] text-gray-500 text-center">
+          We'll only email you about RepoRadar updates. Unsubscribe anytime.
+        </p>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Next steps CTA ─────────────────────────────────────────── #}
+  <div class="mt-8 text-center">
+    <a href="{{ url_for('index') }}"
+       class="inline-flex items-center gap-2 px-6 py-3 border border-ink-600 hover:border-accent rounded-lg text-gray-300 hover:text-accent transition">
+      Scan another repository
+    </a>
+  </div>
+
+</div>
+{% endblock %}

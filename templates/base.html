@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}RepoRadar — GitHub Security Scanner{% endblock %}</title>
+  <meta name="description" content="Scan any public GitHub repository for exposed secrets, CI/CD misconfigurations, and sensitive files. Free." />
+  <meta property="og:title" content="RepoRadar — GitHub Security Scanner" />
+  <meta property="og:description" content="Free scanner that finds exposed secrets, dangerous CI/CD patterns, and leaked config files in public GitHub repos." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%9B%A1%EF%B8%8F</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { 950: '#05070b', 900: '#0a0d14', 800: '#11151f', 700: '#1a2030', 600: '#252d42' },
+            accent: { DEFAULT: '#00ff9d', dim: '#00cc7d', glow: '#00ff9d33' },
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: #05070b; color: #e5e7eb; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(0,255,157,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,157,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .glow-text { text-shadow: 0 0 24px rgba(0,255,157,0.45); }
+    .scan-glow {
+      box-shadow: 0 0 0 1px rgba(0,255,157,0.4),
+                  0 0 24px rgba(0,255,157,0.18),
+                  inset 0 0 24px rgba(0,255,157,0.04);
+    }
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .pulse-dot { animation: pulse-soft 2s infinite; }
+    .severity-CRITICAL { color: #ff4d6d; border-color: #ff4d6d; }
+    .severity-HIGH     { color: #ff9f1c; border-color: #ff9f1c; }
+    .severity-MEDIUM   { color: #ffd60a; border-color: #ffd60a; }
+    .severity-LOW      { color: #4cc9f0; border-color: #4cc9f0; }
+    .severity-INFO     { color: #9ca3af; border-color: #9ca3af; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.2rem 0.6rem; border-radius: 0.375rem;
+      border: 1px solid currentColor; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="border-b border-ink-700 bg-ink-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="flex items-center gap-2 group">
+        <span class="text-2xl">🛡️</span>
+        <span class="font-mono font-bold text-lg tracking-tight">
+          repo<span class="text-accent group-hover:glow-text transition">radar</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="https://github.com/dmzpurge/reporadar" target="_blank"
+           class="text-gray-400 hover:text-accent transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.73-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.96 10.96 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+          GitHub
+        </a>
+        <a href="#features" class="text-gray-400 hover:text-accent transition">Features</a>
+        <a href="#pricing" class="text-gray-400 hover:text-accent transition">Pricing</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="max-w-3xl mx-auto px-6 pt-6">
+          {% for category, msg in messages %}
+            <div class="mb-3 px-4 py-3 rounded-lg border text-sm
+              {% if category == 'error' %}border-red-500/40 bg-red-500/10 text-red-300
+              {% elif category == 'success' %}border-accent/40 bg-accent/10 text-accent
+              {% elif category == 'limit' %}border-yellow-500/40 bg-yellow-500/10 text-yellow-300
+              {% else %}border-ink-700 bg-ink-800 text-gray-300{% endif %}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-ink-700 bg-ink-900 mt-20">
+    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🛡️</span>
+        <span class="font-mono">reporadar</span>
+        <span>&middot;</span>
+        <span>built by <a href="https://github.com/dmzpurge" class="text-gray-400 hover:text-accent">@dmzpurge</a></span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/dmzpurge/reporadar" class="hover:text-accent">Source</a>
+        <a href="https://github.com/dmzpurge/reporadar/blob/main/SECURITY.md" class="hover:text-accent">Security</a>
+        <a href="https://github.com/dmzpurge/reporadar/blob/main/LICENSE" class="hover:text-accent">MIT License</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

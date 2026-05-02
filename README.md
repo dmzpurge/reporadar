@@ -7,7 +7,20 @@
 
 **GitHub Repository Security Scanner** — scans public repositories for exposed secrets, dangerous CI/CD misconfigurations, and sensitive files.
 
-Built for authorized security assessments and educational research.
+Available as both a **Python CLI** and a **web app**. Built for authorized security assessments and educational research.
+
+---
+
+## Web App (No Install)
+
+Run the web version locally with `python app.py` then open <http://127.0.0.1:8765>.
+Or deploy in one click to Railway (see Deployment section below).
+
+The web UI provides:
+- A scan input that accepts `owner/repo` or full GitHub URLs
+- A color-coded findings dashboard (CRITICAL / HIGH / MEDIUM / LOW)
+- JSON export with email capture
+- Free tier: 3 scans per browser session
 
 ---
 
@@ -93,6 +106,21 @@ Based on [OWASP Top 10 CI/CD Security Risks](https://owasp.org/www-project-top-1
 - `write-all` permissions
 - Hardcoded credentials in workflow env blocks
 - Self-hosted runners
+
+---
+
+## Deployment (Web App)
+
+Deploy the web app to [Railway](https://railway.app) for free:
+
+1. Push this repo to GitHub
+2. Go to [railway.app/new](https://railway.app/new) and connect your GitHub repo
+3. Add environment variables in the Railway dashboard:
+   - `GITHUB_TOKEN` — your GitHub PAT (`public_repo` scope)
+   - `FLASK_SECRET_KEY` — a random hex string (`python -c "import secrets; print(secrets.token_hex(32))"`)
+4. Railway auto-detects the `Procfile` and deploys
+
+The app will be live at `<your-project>.up.railway.app` within 2 minutes.
 
 ---
 

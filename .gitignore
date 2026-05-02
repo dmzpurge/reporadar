@@ -21,6 +21,14 @@ env/
 # Output files
 *.json
 !package.json
+!railway.json
+
+# Captured emails (MVP local store)
+captured_emails.txt
+
+# Flask session files
+flask_session/
+instance/
 
 # OS
 .DS_Store
